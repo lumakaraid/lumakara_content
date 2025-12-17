@@ -1,117 +1,103 @@
-# 🚀 Social Media AI Framework - All-in-One Viral Content System
+# LumakaraContent — Omnichannel Content Management System
 
-Framework lengkap untuk planning, strategi, dan eksekusi konten viral dengan AI automation.
+Sistem manajemen konten omnichannel lengkap dengan AI-powered content generation untuk semua platform social media.
 
-![Dashboard Preview](https://image.pollinations.ai/prompt/modern%20social%20media%20dashboard%20UI%20dark%20theme%20with%20analytics%20charts%20and%20content%20calendar%2C%20professional%20web%20design?width=1200&height=600&nologo=true)
+## 🚀 Features
 
-## 🎯 Fitur Utama
+### 1. Multi-Project / Multi-Brand Support
+- Kelola multiple brand/project dalam satu dashboard
+- Setiap project memiliki knowledge base terpisah
+- Switch antar project dengan mudah
 
-| Fitur | Deskripsi |
-|-------|-----------|
-| 📊 **Dashboard** | Overview performa, quick actions, recent content |
-| 🎯 **Strategy & Planning** | Setup brand, niche, target audience, content pillars |
-| 📅 **Content Calendar** | Visual calendar dengan auto-generate weekly/monthly |
-| ⚡ **AI Generator** | Generate text, image, video script dengan Pollinations AI |
-| 🔥 **Viral Engine** | Trending topics, viral hooks, engagement formulas |
-| 💾 **Database** | Simpan, search, filter, export semua konten |
-| 📈 **Analytics** | Track performa dan AI recommendations |
+### 2. Knowledge Base Integration
+- **Brand Guidelines**: Voice, key messages, words to use/avoid
+- **Documents**: Upload file untuk referensi AI
+- **Quick Notes**: Catatan cepat tentang brand
+- **Content Pillars**: Topik utama untuk konten
 
-## 🔧 Tech Stack
+### 3. Auto-Generate Monthly Content
+- Satu klik untuk generate 1 bulan konten
+- Berdasarkan knowledge base dan brand guidelines
+- Distribusi otomatis ke posting days yang dipilih
+- Support multiple platforms sekaligus
 
-- **Pollinations AI** - Generate gambar, teks, video (gratis & unlimited)
-- **N8N Integration** - Automation workflow (opsional)
-- **Opal** - External video/image generation (opsional)
-- **Local Storage** - Data tersimpan di browser
+### 4. Content Hub (Notion-like Views)
+- **Table View**: Spreadsheet-style dengan sorting & filtering
+- **Kanban View**: Drag & drop untuk manage status
+- **Calendar View**: Visualisasi jadwal bulanan
 
-## 📁 Struktur Project
+### 5. Full CRUD Operations
+- Create, Read, Update, Delete semua konten
+- Edit inline dari semua view
+- Bulk operations support
 
-```
-social-media-ai-framework/
-├── index.html              # Main dashboard
-├── css/
-│   └── styles.css          # Styling (dark theme)
-├── js/
-│   ├── app.js              # Main application logic
-│   ├── pollinations.js     # Pollinations API integration
-│   ├── content-planner.js  # Calendar & scheduling
-│   ├── viral-engine.js     # Viral optimization
-│   └── database.js         # Local storage management
-├── data/
-│   ├── viral-templates.json    # Hook & CTA templates
-│   └── sample-content.json     # Sample content examples
-├── WORKFLOW.md             # Complete workflow guide
-└── N8N-INTEGRATION.md      # N8N setup guide
-```
+### 6. AI Generator
+- Generate konten individual dengan AI
+- Auto-generate image prompts
+- Platform-specific optimization
+- Knowledge base context integration
 
-## 🚀 Quick Start (5 Menit!)
+## 📦 Tech Stack
 
-1. **Buka** `index.html` di browser (Chrome/Firefox/Edge)
-2. **Setup** brand name & niche di Strategy
-3. **Tambah** 3-5 content pillars
-4. **Generate** konten dengan AI Generator
-5. **Review** viral score di Viral Engine
-6. **Save** ke database
-7. **Export** & publish!
+- **Frontend**: Vanilla HTML, CSS, JavaScript
+- **AI**: Pollinations AI (Free, no API key needed)
+- **Storage**: LocalStorage (client-side)
+- **Deployment**: Vercel-ready
 
-## 📊 Complete Workflow
+## 🛠️ Setup
 
-```
-┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   SETUP     │───►│  PLANNING   │───►│  GENERATE   │───►│  PUBLISH    │
-│             │    │             │    │             │    │             │
-│ • Brand     │    │ • Calendar  │    │ • Text/AI   │    │ • Review    │
-│ • Niche     │    │ • Weekly    │    │ • Image/AI  │    │ • Export    │
-│ • Pillars   │    │ • Monthly   │    │ • Video     │    │ • Post      │
-└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```bash
+# Install dependencies
+npm install
+
+# Run development server
+npm start
+
+# Open browser
+http://localhost:3000
 ```
 
-## 🔥 Viral Features
+## 📱 Supported Platforms
 
-### Hook Categories
-- 🎣 **Curiosity Gap** - "Ini yang mereka gak mau kamu tau..."
-- 💥 **Controversial** - "Unpopular opinion: ..."
-- 📖 **Storytelling** - "Cerita ini mengubah hidup aku..."
-- ❓ **Question-based** - "Pernah ngerasa...?"
-- ⚡ **Shock Value** - "STOP! Jangan ... sebelum baca ini"
-- 🤝 **Relatable** - "POV: ..."
+- Instagram (Feed, Reels, Story, Carousel)
+- TikTok
+- Twitter/X (Tweet, Thread)
+- LinkedIn (Post, Article)
+- Facebook
+- YouTube (Shorts, Description)
+- Blog/Article
 
-### Engagement Formulas
-- **POV Formula** - Situasi relatable
-- **Listicle** - X tips/cara yang...
-- **Before-After** - Transformasi
-- **Secret/Hack** - Rahasia yang...
-- **Challenge** - Coba selama X hari
-- **Story Hook** - Cerita dramatis
+## 🔄 Workflow
 
-## 📱 Platform Support
+1. **Create Project** → Setup brand info
+2. **Setup Knowledge Base** → Add guidelines, docs, pillars
+3. **Auto-Generate** → 1 bulan konten otomatis
+4. **Review & Edit** → CRUD di Content Hub
+5. **Schedule** → Atur jadwal posting
+6. **Export** → Download calendar/content
 
-- ✅ Instagram (Feed, Reels, Story)
-- ✅ TikTok
-- ✅ YouTube Shorts
-- ✅ Twitter/X
-- ✅ Facebook
-- ✅ LinkedIn
+## 🎨 Customization
 
-## 💡 Tips Pro
+Edit `css/styles.css` untuk mengubah:
+- Brand colors (CSS variables)
+- Typography
+- Layout
+- Component styles
 
-1. **Konsistensi > Kuantitas** - 1 konten bagus/hari > 5 konten biasa
-2. **Hook adalah segalanya** - 3 detik pertama menentukan
-3. **Batch create** - Generate 1 minggu sekaligus
-4. **Test & iterate** - Coba berbagai hook, lihat mana yang perform
-5. **Engage back** - Reply comment dalam 1 jam pertama
+## 📤 Deployment
 
-## 📖 Documentation
+### Vercel
+```bash
+# Push to GitHub
+git add .
+git commit -m "Deploy"
+git push
 
-- [WORKFLOW.md](WORKFLOW.md) - Complete workflow guide
-- [N8N-INTEGRATION.md](N8N-INTEGRATION.md) - N8N automation setup
+# Connect to Vercel
+# Import from GitHub
+# Deploy automatically
+```
 
-## 🆓 100% Free
+## 📄 License
 
-- ✅ Pollinations AI - Unlimited text & image generation
-- ✅ No API key required
-- ✅ No signup needed
-- ✅ Data stored locally
-
----
-
-Made with ❤️ for content creators
+MIT License - Free for personal and commercial use.
