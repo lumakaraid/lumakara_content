@@ -82,28 +82,28 @@
 
                 <!-- Stats Cards -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="navigateTo('content-hub'); document.getElementById('filter-status').value='all'; filterContent();" style="cursor:pointer;" title="View all content">
                         <div class="stat-icon">◈</div>
                         <div class="stat-info">
                             <span class="stat-value" id="stat-total">0</span>
                             <span class="stat-label">Total Konten</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="navigateTo('content-hub'); document.getElementById('filter-status').value='draft'; filterContent();" style="cursor:pointer;" title="View drafts">
                         <div class="stat-icon">📝</div>
                         <div class="stat-info">
                             <span class="stat-value" id="stat-draft">0</span>
                             <span class="stat-label">Draft</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="navigateTo('content-hub'); document.getElementById('filter-status').value='scheduled'; filterContent();" style="cursor:pointer;" title="View scheduled">
                         <div class="stat-icon">📅</div>
                         <div class="stat-info">
                             <span class="stat-value" id="stat-scheduled">0</span>
                             <span class="stat-label">Scheduled</span>
                         </div>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card" onclick="navigateTo('content-hub'); document.getElementById('filter-status').value='published'; filterContent();" style="cursor:pointer;" title="View published">
                         <div class="stat-icon">✓</div>
                         <div class="stat-info">
                             <span class="stat-value" id="stat-published">0</span>

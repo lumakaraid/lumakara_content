@@ -197,17 +197,26 @@ function loadDashboard() {
     // Platform distribution
     const platformDist = document.getElementById('platform-distribution');
     const maxCount = Math.max(...Object.values(stats.byPlatform), 1);
-    platformDist.innerHTML = Object.entries(stats.byPlatform)
+    const platformBars = Object.entries(stats.byPlatform)
         .filter(([_, count]) => count > 0)
         .map(([platform, count]) => `
-            <div class="platform-bar-item">
+            <div class="platform-bar-item" onclick="navigateTo('content-hub'); document.getElementById('filter-platform').value='${platform}'; filterContent();" style="cursor:pointer;" title="Click to filter by ${platform}">
                 <span class="platform-bar-label">${platform}</span>
                 <div class="platform-bar-track">
                     <div class="platform-bar-fill" style="width: ${(count / maxCount) * 100}%"></div>
                 </div>
                 <span class="platform-bar-count">${count}</span>
             </div>
-        `).join('') || '<p class="empty-state">No content yet</p>';
+        `).join('');
+    
+    platformDist.innerHTML = platformBars || `
+        <div style="text-align:center;padding:20px;color:var(--text-muted);">
+            <p>No content yet</p>
+            <p style="font-size:12px;margin-top:8px;">
+                <a href="#" onclick="navigateTo('knowledge-base');return false;" style="color:var(--primary);">Setup Knowledge Base</a> first, then 
+                <a href="#" onclick="autoGenerateMonthlyContent();return false;" style="color:var(--primary);">Auto-Generate</a>
+            </p>
+        </div>`;
     
     // Week preview
     loadWeekPreview();
@@ -230,7 +239,7 @@ function loadWeekPreview() {
         const isToday = date.toDateString() === today.toDateString();
         
         html += `
-            <div class="week-day ${isToday ? 'today' : ''}">
+            <div class="week-day ${isToday ? 'today' : ''}" onclick="openDayDetail('${dateStr}')" style="cursor:pointer;" title="Click to view/add content">
                 <div class="week-day-name">${days[i]}</div>
                 <div class="week-day-date">${date.getDate()}</div>
                 <div class="week-day-count">${contents.length}</div>
@@ -249,26 +258,40 @@ function loadUpcomingContent() {
         .slice(0, 5);
     
     if (contents.length === 0) {
-        container.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📅</div><h3>No upcoming content</h3><p>Generate monthly content to get started</p></div>';
+        container.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">📅</div>
+                <h3>No upcoming content</h3>
+                <p>Generate monthly content to get started</p>
+                <div style="margin-top:16px;display:flex;gap:12px;justify-content:center;">
+                    <button class="btn-primary" onclick="autoGenerateMonthlyContent()">⚡ Auto-Generate</button>
+                    <button class="btn-secondary" onclick="navigateTo('content-hub'); setTimeout(() => openContentEditor(), 100)">+ Create Manual</button>
+                </div>
+            </div>`;
         return;
     }
     
     container.innerHTML = contents.map(c => {
         const date = new Date(c.scheduledDate);
+        const needsAI = !c.caption || c.status === 'idea';
         return `
-            <div class="content-preview-item" onclick="openContentDetail('${c.id}')">
-                <div class="content-preview-date">
+            <div class="content-preview-item">
+                <div class="content-preview-date" onclick="openContentDetail('${c.id}')" style="cursor:pointer;">
                     <div class="day">${date.getDate()}</div>
                     <div class="month">${date.toLocaleString('id-ID', { month: 'short' })}</div>
                 </div>
-                <div class="content-preview-info">
+                <div class="content-preview-info" onclick="openContentDetail('${c.id}')" style="cursor:pointer;">
                     <div class="content-preview-title">${c.title || 'Untitled'}</div>
                     <div class="content-preview-meta">
                         <span class="platform-badge ${c.platform}">${c.platform}</span>
                         <span>${c.type}</span>
+                        ${needsAI ? '<span style="color:var(--warning);font-size:11px;">⚠️ Needs AI</span>' : ''}
                     </div>
                 </div>
-                <span class="content-preview-status ${c.status}">${c.status}</span>
+                <div style="display:flex;align-items:center;gap:8px;">
+                    ${needsAI ? `<button onclick="event.stopPropagation(); triggerAIForContent('${c.id}')" style="padding:4px 8px;background:var(--primary);color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">⚡</button>` : ''}
+                    <span class="content-preview-status ${c.status}">${c.status}</span>
+                </div>
             </div>
         `;
     }).join('');
@@ -526,25 +549,42 @@ function openDayDetail(dateStr) {
             <h2>${date.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</h2>
             <button class="modal-close" onclick="closeModal()">&times;</button>
         </div>
-        <div style="margin-bottom:16px;">
+        <div style="margin-bottom:16px;display:flex;gap:8px;">
             <button class="btn-primary" onclick="closeModal(); openContentEditor(null, '${dateStr}')">+ Add Content</button>
+            <button class="btn-secondary" onclick="closeModal(); quickGenerateForDate('${dateStr}')">⚡ Quick Generate</button>
         </div>
         ${contents.length === 0 ? '<p class="empty-state">No content scheduled for this day</p>' :
-            contents.map(c => `
-                <div class="content-preview-item" onclick="closeModal(); openContentDetail('${c.id}')">
-                    <div class="content-preview-info">
+            contents.map(c => {
+                const needsAI = !c.caption || c.status === 'idea';
+                return `
+                <div class="content-preview-item">
+                    <div class="content-preview-info" onclick="closeModal(); openContentDetail('${c.id}')" style="cursor:pointer;flex:1;">
                         <div class="content-preview-title">${c.title || 'Untitled'}</div>
                         <div class="content-preview-meta">
                             <span class="platform-badge ${c.platform}">${c.platform}</span>
                             <span>${c.type}</span>
+                            ${needsAI ? '<span style="color:var(--warning);font-size:11px;">⚠️ Needs AI</span>' : ''}
                         </div>
                     </div>
-                    <span class="status-badge ${c.status}">${c.status}</span>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        ${needsAI ? `<button onclick="event.stopPropagation(); closeModal(); triggerAIForContent('${c.id}')" style="padding:4px 8px;background:var(--primary);color:white;border:none;border-radius:4px;cursor:pointer;font-size:11px;">⚡</button>` : ''}
+                        <span class="status-badge ${c.status}">${c.status}</span>
+                    </div>
                 </div>
-            `).join('')
+            `}).join('')
         }
     `;
     modal.classList.add('show');
+}
+
+// Quick generate for specific date
+function quickGenerateForDate(dateStr) {
+    navigateTo('generator');
+    setTimeout(() => {
+        // Store date for later use when saving
+        window.pendingScheduleDate = dateStr;
+        showToast(`Content will be scheduled for ${dateStr}. Enter topic and generate!`, 'info');
+    }, 100);
 }
 
 // ==================== FULL CALENDAR PAGE ====================
@@ -669,8 +709,10 @@ function openContentEditor(contentId = null, defaultDate = null) {
             <label>Notes</label>
             <textarea id="edit-notes" rows="2" placeholder="Internal notes...">${content?.notes || ''}</textarea>
         </div>
-        <div style="display:flex;gap:12px;">
-            <button class="btn-primary" style="flex:1" onclick="saveContent('${contentId || ''}')">${content ? 'Save Changes' : 'Create Content'}</button>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <button class="btn-primary" style="flex:1;min-width:150px;" onclick="saveContent('${contentId || ''}')">${content ? 'Save Changes' : 'Create Content'}</button>
+            ${!content ? `<button class="btn-secondary" onclick="closeModal(); navigateTo('generator');" title="Generate content with AI instead">⚡ Use AI Generator</button>` : ''}
+            ${content && (!content.caption || content.status === 'idea') ? `<button class="btn-secondary" onclick="closeModal(); triggerAIForContent('${contentId}')">⚡ Generate AI</button>` : ''}
             ${content ? `<button class="btn-danger" onclick="deleteContent('${contentId}'); closeModal()">Delete</button>` : ''}
         </div>
     `;
@@ -935,7 +977,14 @@ function addPillar() {
     DB.knowledgeBase.addPillar(pillar);
     input.value = '';
     renderPillars();
-    showToast('Pillar added!', 'success');
+    
+    // Check if this is the first pillar and suggest auto-generate
+    const pillars = DB.knowledgeBase.getPillars();
+    if (pillars.length === 1) {
+        showToast('First pillar added! You can now Auto-Generate content from Dashboard.', 'success');
+    } else {
+        showToast('Pillar added!', 'success');
+    }
 }
 
 function renderPillars() {
@@ -1094,7 +1143,7 @@ function saveGeneratedContent() {
         window.pendingContentUpdate = null;
     } else {
         // Create new content
-        DB.content.add({
+        const newContent = {
             title: lastGeneratedContent.topic.substring(0, 50),
             caption: fullCaption,
             hashtags: lastGeneratedContent.hashtags || [],
@@ -1106,16 +1155,32 @@ function saveGeneratedContent() {
             hook: lastGeneratedContent.hook || '',
             cta: lastGeneratedContent.cta || '',
             status: 'draft'
-        });
+        };
+        
+        // Check if there's a pending schedule date from calendar
+        if (window.pendingScheduleDate) {
+            newContent.scheduledDate = window.pendingScheduleDate;
+            newContent.scheduledTime = '09:00';
+            newContent.status = 'scheduled';
+            window.pendingScheduleDate = null;
+        }
+        
+        DB.content.add(newContent);
         showToast('Content saved to hub!', 'success');
     }
     
     lastGeneratedContent = null;
     document.getElementById('gen-result').innerHTML = '<p class="placeholder-text">Result will appear here...</p>';
     document.getElementById('gen-result-actions').style.display = 'none';
+    document.getElementById('gen-topic').value = '';
     
     // Refresh dashboard stats
     loadDashboard();
+    
+    // Navigate to Content Hub to see the saved content
+    setTimeout(() => {
+        navigateTo('content-hub');
+    }, 500);
 }
 
 // ==================== SETTINGS ====================
