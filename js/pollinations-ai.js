@@ -13,40 +13,60 @@ const PollinationsAI = {
         imageModels: ['flux', 'turbo', 'flux-realism', 'flux-anime', 'flux-3d']
     },
 
-    // Generate text with Pollinations AI
+    // Generate text with Pollinations AI (with retry)
     async generateText(prompt, options = {}) {
         const {
             model = 'openai',
             systemPrompt = 'You are a helpful AI assistant for content creation.',
             temperature = 0.7,
-            maxTokens = 2000
+            maxTokens = 2000,
+            retries = 2
         } = options;
 
-        try {
-            const messages = [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: prompt }
-            ];
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            try {
+                const messages = [
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: prompt }
+                ];
 
-            const response = await fetch(this.endpoints.text, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messages,
-                    model,
-                    temperature,
-                    max_tokens: maxTokens
-                })
-            });
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-            if (!response.ok) throw new Error('Text generation failed');
-            
-            const text = await response.text();
-            return { success: true, text };
-        } catch (error) {
-            console.error('Pollinations Text Error:', error);
-            return { success: false, error: error.message };
+                const response = await fetch(this.endpoints.text, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        messages,
+                        model,
+                        temperature,
+                        max_tokens: maxTokens
+                    }),
+                    signal: controller.signal
+                });
+
+                clearTimeout(timeoutId);
+
+                if (!response.ok) {
+                    console.error(`Attempt ${attempt + 1} failed:`, response.status);
+                    if (attempt < retries) continue;
+                    throw new Error('Text generation failed');
+                }
+                
+                const text = await response.text();
+                if (text && text.trim()) {
+                    return { success: true, text };
+                }
+                throw new Error('Empty response');
+            } catch (error) {
+                console.error(`Pollinations Error (attempt ${attempt + 1}):`, error);
+                if (attempt === retries) {
+                    return { success: false, error: error.message };
+                }
+                await new Promise(r => setTimeout(r, 1000)); // Wait 1s before retry
+            }
         }
+        return { success: false, error: 'All retries failed' };
     },
 
     // Generate image with Pollinations AI
@@ -213,17 +233,47 @@ Write in Indonesian language.`
 
     // Generate content based on type
     async generateContent(topic, type, tone = 'professional', pillar = 'Education') {
-        const promptGenerator = this.contentPrompts[type.replace('text_', '').replace('video_', '').replace('image_', '')];
+        const typeKey = type.replace('text_', '').replace('video_', '').replace('image_', '');
+        const promptGenerator = this.contentPrompts[typeKey];
         
         if (!promptGenerator) {
             return { success: false, error: 'Unknown content type' };
         }
 
         const prompt = promptGenerator(topic, tone, pillar);
-        return await this.generateText(prompt, {
-            systemPrompt: 'You are an expert content creator and social media strategist. Create engaging, viral-worthy content.',
-            temperature: 0.8
+        const result = await this.generateText(prompt, {
+            systemPrompt: 'You are an expert content creator. Create engaging content in Indonesian.',
+            temperature: 0.8,
+            retries: 2
         });
+
+        // If API fails, return fallback content
+        if (!result.success) {
+            return { 
+                success: true, 
+                text: this.getFallbackContent(topic, typeKey, tone, pillar) 
+            };
+        }
+        return result;
+    },
+
+    // Fallback content when API fails
+    getFallbackContent(topic, type, tone, pillar) {
+        const templates = {
+            article: `📝 ARTIKEL: ${topic}\n\n🎯 Tone: ${tone} | Pillar: ${pillar}\n\n---\n\n**Headline:** Tips ${topic} yang Wajib Kamu Tahu!\n\n**Intro:**\nDi era digital ini, ${topic} menjadi semakin penting. Mari kita bahas lebih dalam.\n\n**Poin Utama:**\n1. Pahami dasar-dasar ${topic}\n2. Terapkan strategi yang tepat\n3. Evaluasi dan tingkatkan terus\n\n**Kesimpulan:**\nDengan menerapkan tips di atas, kamu bisa sukses dalam ${topic}.\n\n**Hashtags:** #${topic.replace(/\s/g,'')} #tips #viral #indonesia`,
+            
+            thread: `🧵 THREAD: ${topic}\n\n1/7: 🔥 Mau tau rahasia ${topic}? Thread ini akan mengubah cara pandangmu!\n\n2/7: Pertama, kamu perlu memahami fundamentalnya...\n\n3/7: Kedua, praktik adalah kunci utama...\n\n4/7: Ketiga, konsistensi mengalahkan segalanya...\n\n5/7: Tips bonus: Jangan takut gagal!\n\n6/7: Recap: Pahami, praktik, konsisten.\n\n7/7: Like & RT kalau bermanfaat! Follow untuk tips lainnya 🚀\n\n#${topic.replace(/\s/g,'')} #thread #tips`,
+            
+            shortVideo: `🎬 SCRIPT VIDEO PENDEK: ${topic}\n\n⏱️ Durasi: 30-60 detik\n\n🎣 HOOK (0-3s):\n"Stop scroll! Ini yang kamu butuhkan tentang ${topic}..."\n\n📱 BODY (3-50s):\n- Poin 1: [Jelaskan benefit utama]\n- Poin 2: [Berikan contoh nyata]\n- Poin 3: [Tips actionable]\n\n🎯 CTA (50-60s):\n"Follow untuk tips lainnya! Comment kalau mau part 2!"\n\n📝 CAPTION:\n${topic} yang wajib kamu tahu! 🔥\n\n#${topic.replace(/\s/g,'')} #fyp #viral #tips`,
+            
+            carousel: `🎨 CAROUSEL: ${topic}\n\n📱 SLIDE 1 (Cover):\n"${topic} - Panduan Lengkap"\n\n📱 SLIDE 2:\nApa itu ${topic}?\n[Definisi singkat]\n\n📱 SLIDE 3:\nMengapa penting?\n[3 alasan utama]\n\n📱 SLIDE 4:\nCara memulai\n[Step by step]\n\n📱 SLIDE 5:\nTips sukses\n[3 tips praktis]\n\n📱 SLIDE 6 (CTA):\nSave post ini! 💾\nFollow @akunkamu\n\n📝 CAPTION:\nPanduan lengkap ${topic}! Swipe sampai habis ➡️\n\n#${topic.replace(/\s/g,'')} #carousel #tips #edukasi`,
+            
+            story: `📱 STORY SEQUENCE: ${topic}\n\n🎬 STORY 1:\nText: "Mau tau tentang ${topic}?"\nSticker: Poll (Ya/Tidak)\n\n🎬 STORY 2:\nText: "Ini dia tipsnya..."\nMusic: Upbeat/Trending\n\n🎬 STORY 3:\nText: "Tip #1: [Tips pertama]"\nSticker: Emoji slider\n\n🎬 STORY 4:\nText: "Tip #2: [Tips kedua]"\n\n🎬 STORY 5:\nText: "DM 'TIPS' untuk info lengkap!"\nSticker: Question box`,
+            
+            longVideo: `🎬 SCRIPT VIDEO PANJANG: ${topic}\n\n⏱️ Durasi: 8-10 menit\n\n📍 INTRO (0:00-0:30):\n"Hai semuanya! Di video ini kita akan bahas ${topic} secara lengkap..."\n\n📚 CHAPTER 1 (0:30-3:00): Pengenalan\n- Apa itu ${topic}\n- Mengapa ini penting\n\n📚 CHAPTER 2 (3:00-6:00): Cara Praktis\n- Step 1: [Langkah pertama]\n- Step 2: [Langkah kedua]\n- Step 3: [Langkah ketiga]\n\n📚 CHAPTER 3 (6:00-8:00): Tips & Tricks\n- Tips untuk pemula\n- Kesalahan yang harus dihindari\n\n🎯 OUTRO (8:00-8:30):\n"Jangan lupa like, subscribe, dan nyalakan lonceng!"\n\n📝 DESKRIPSI:\nPanduan lengkap ${topic}. Timestamps ada di bawah!\n\n🏷️ TAGS: ${topic}, tutorial, panduan, tips`
+        };
+        
+        return templates[type] || `📄 Konten untuk: ${topic}\n\nTone: ${tone}\nPillar: ${pillar}\n\nSilakan gunakan Magic Studio untuk hasil yang lebih baik dengan workflow yang sesuai.`;
     },
 
     // AI Chat - Smart Assistant
