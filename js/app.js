@@ -1825,3 +1825,20 @@ navigateTo = function(sectionId) {
         case 'opal-hub': loadOpalHub(); break;
     }
 };
+
+
+// ==================== AI INSIGHTS ====================
+function refreshInsights() {
+    if (typeof showToast !== 'undefined') {
+        showToast('Refreshing AI insights...', 'info');
+    }
+    // Simulate refresh
+    setTimeout(() => {
+        if (typeof showToast !== 'undefined') {
+            showToast('AI insights updated!', 'success');
+        }
+    }, 1000);
+}
+
+// Make function globally available
+window.refreshInsights = refreshInsights;

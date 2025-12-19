@@ -675,6 +675,95 @@ const MagicStudioUltra = {
             ]
         },
 
+        'magic-remove': {
+            name: 'Magic Remove Pro',
+            icon: '🧹',
+            category: 'image',
+            description: 'AI-powered object removal from images',
+            output: '10 cleaned images',
+            models: 'Imagen 4',
+            difficulty: 'beginner',
+            estimatedTime: '3-5 min',
+            fields: [
+                { id: 'remove_type', type: 'select', label: 'Remove Type', options: ['Object', 'Person', 'Background Element', 'Text/Watermark', 'Blemish/Imperfection'], required: true },
+                { id: 'fill_method', type: 'select', label: 'Fill Method', options: ['AI Inpaint', 'Content-Aware', 'Blur', 'Solid Color'], required: true }
+            ]
+        },
+
+        'magic-scene': {
+            name: 'Magic Scene Pro',
+            icon: '🌆',
+            category: 'image',
+            description: 'Change scene/environment of images',
+            output: '10 scene variations',
+            models: 'Imagen 4',
+            difficulty: 'intermediate',
+            estimatedTime: '5-8 min',
+            fields: [
+                { id: 'scene_type', type: 'select', label: 'Scene Type', options: ['Indoor Studio', 'Outdoor Nature', 'Urban City', 'Beach/Tropical', 'Mountain', 'Abstract', 'Seasonal'], required: true },
+                { id: 'time_of_day', type: 'select', label: 'Time of Day', options: ['Morning', 'Noon', 'Golden Hour', 'Night', 'Any'], required: true },
+                { id: 'weather', type: 'select', label: 'Weather', options: ['Sunny', 'Cloudy', 'Rainy', 'Snowy', 'Foggy', 'Any'], required: true }
+            ]
+        },
+
+        'magic-color': {
+            name: 'Magic Color Pro',
+            icon: '🎨',
+            category: 'image',
+            description: 'AI color grading and color manipulation',
+            output: '15 color variations',
+            models: 'Imagen 4',
+            difficulty: 'beginner',
+            estimatedTime: '3-5 min',
+            fields: [
+                { id: 'color_style', type: 'select', label: 'Color Style', options: ['Warm', 'Cool', 'Vintage', 'Cinematic', 'Vibrant', 'Muted', 'Black & White', 'Duotone'], required: true },
+                { id: 'intensity', type: 'select', label: 'Intensity', options: ['Subtle', 'Medium', 'Strong'], required: true },
+                { id: 'preset', type: 'select', label: 'Preset', options: ['Instagram Filter', 'Film Look', 'HDR', 'Natural', 'Custom'], required: true }
+            ]
+        },
+
+        'face-swap': {
+            name: 'Face Swap Creator',
+            icon: '🎭',
+            category: 'image',
+            description: 'AI face swap and replacement',
+            output: '10 face swap variations',
+            models: 'Imagen 4',
+            difficulty: 'intermediate',
+            estimatedTime: '5-8 min',
+            fields: [
+                { id: 'swap_type', type: 'select', label: 'Swap Type', options: ['Face to Face', 'Face to Model', 'Multiple Faces', 'Expression Transfer'], required: true },
+                { id: 'blend_quality', type: 'select', label: 'Blend Quality', options: ['Natural', 'Seamless', 'Artistic'], required: true },
+                { id: 'preserve', type: 'select', label: 'Preserve', options: ['Skin Tone', 'Lighting', 'Expression', 'All'], required: true }
+            ],
+            assetUploads: [
+                { id: 'source_face', type: 'image', label: '[FACE] Source Face', required: true },
+                { id: 'target_image', type: 'image', label: '[REFERENCE] Target Image', required: true }
+            ]
+        },
+
+        'magic-model': {
+            name: 'Magic Model Virtual Try-On',
+            icon: '👔',
+            category: 'image',
+            description: 'Virtual try-on for fashion products',
+            output: '10 try-on images',
+            models: 'Imagen 4',
+            difficulty: 'intermediate',
+            estimatedTime: '8-12 min',
+            popular: true,
+            fields: [
+                { id: 'garment_type', type: 'select', label: 'Garment Type', options: ['Top', 'Bottom', 'Dress', 'Outerwear', 'Full Outfit', 'Accessories'], required: true },
+                { id: 'model_type', type: 'select', label: 'Model Type', options: ['AI Generated', 'Specific Pose', 'Multiple Poses', 'Lifestyle'], required: true },
+                { id: 'body_type', type: 'select', label: 'Body Type', options: ['Slim', 'Average', 'Plus Size', 'Athletic', 'Various'], required: true },
+                { id: 'background', type: 'select', label: 'Background', options: ['Studio White', 'Lifestyle', 'Urban', 'Nature', 'Custom'], required: true }
+            ],
+            assetUploads: [
+                { id: 'garment_image', type: 'image', label: '[PRODUCT] Garment Image', required: true },
+                { id: 'model_reference', type: 'image', label: '[FACE] Model Reference (optional)', required: false }
+            ]
+        },
+
         'magic-relight': {
             name: 'Magic Relight Pro',
             icon: '💡',
