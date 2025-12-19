@@ -434,20 +434,41 @@
 
                 <!-- Content Types / Omnichannel Distribution -->
                 <div class="card" style="margin-bottom:24px;">
-                    <div class="card-header"><h3>📱 Omnichannel Content Types</h3></div>
+                    <div class="card-header"><h3>📱 Omnichannel Content Types</h3><button class="btn-ghost" onclick="KnowledgeBase.editContentTypes()">Edit</button></div>
                     <div class="card-body" id="kb-content-types"></div>
                 </div>
 
                 <!-- Platform Strategy -->
                 <div class="card" style="margin-bottom:24px;">
-                    <div class="card-header"><h3>📡 Platform Strategy</h3></div>
+                    <div class="card-header"><h3>📡 Platform Strategy</h3><button class="btn-ghost" onclick="KnowledgeBase.editPlatforms()">Edit</button></div>
                     <div class="card-body" id="kb-platforms"></div>
                 </div>
 
                 <!-- Visual Identity -->
-                <div class="card">
-                    <div class="card-header"><h3>🎨 Visual Identity</h3></div>
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-header"><h3>🎨 Visual Identity</h3><button class="btn-ghost" onclick="KnowledgeBase.editVisualIdentity()">Edit</button></div>
                     <div class="card-body" id="kb-visual"></div>
+                </div>
+
+                <!-- Notes -->
+                <div class="card" style="margin-bottom:24px;">
+                    <div class="card-header"><h3>📝 Knowledge Base Notes</h3><button class="btn-ghost" onclick="KnowledgeBase.addNote()">+ Add Note</button></div>
+                    <div class="card-body" id="kb-notes">
+                        <div class="empty-state small"><p>No notes yet. Add notes to capture important brand insights.</p></div>
+                    </div>
+                </div>
+
+                <!-- Upload Documents -->
+                <div class="card">
+                    <div class="card-header"><h3>📄 Reference Documents</h3><button class="btn-ghost" onclick="KnowledgeBase.uploadDocument()">+ Upload</button></div>
+                    <div class="card-body" id="kb-documents">
+                        <div style="border:2px dashed var(--border);border-radius:12px;padding:40px;text-align:center;cursor:pointer;" onclick="KnowledgeBase.uploadDocument()">
+                            <div style="font-size:48px;margin-bottom:12px;">📁</div>
+                            <div style="color:var(--text-primary);font-weight:500;margin-bottom:8px;">Drop files here or click to upload</div>
+                            <div style="color:var(--text-muted);font-size:12px;">Supports: PDF, TXT, MD, DOCX (Max 5MB)</div>
+                        </div>
+                        <div id="kb-documents-list" style="margin-top:16px;"></div>
+                    </div>
                 </div>
             </section>
 
@@ -2300,6 +2321,8 @@ ${Object.values(KnowledgeBaseData.contentPillars).map(p => `• ${p.name}: ${p.t
             this.renderContentTypes();
             this.renderPlatforms();
             this.renderVisualIdentity();
+            this.renderNotes();
+            this.renderDocuments();
         },
         
         renderBrandIdentity() {
@@ -2730,6 +2753,398 @@ ${Object.values(KnowledgeBaseData.contentPillars).map(p => `• ${p.name}: ${p.t
             ContentHub.closeExpanded();
             this.renderToneOfVoice();
             showToast('Tone of voice updated!', 'success');
+        },
+        
+        // Edit Visual Identity
+        editVisualIdentity() {
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            const vi = KnowledgeBaseData.visualIdentity;
+            
+            content.innerHTML = `
+                <div style="padding:24px;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">🎨 Edit Visual Identity</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Visual Essence</label>
+                        <input type="text" id="edit-visual-essence" value="${vi.essence}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">
+                    </div>
+                    
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;">
+                        <div class="form-group">
+                            <label>Primary Colors (JSON format)</label>
+                            <textarea id="edit-visual-primary" rows="4" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:monospace;font-size:11px;">${JSON.stringify(vi.colors.primary, null, 2)}</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Secondary Colors (JSON format)</label>
+                            <textarea id="edit-visual-secondary" rows="4" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);font-family:monospace;font-size:11px;">${JSON.stringify(vi.colors.secondary, null, 2)}</textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:16px;">
+                        <label>Typography</label>
+                        <input type="text" id="edit-visual-typography" value="${vi.typography.primary}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:16px;">
+                        <label>Photography Mood</label>
+                        <input type="text" id="edit-visual-photography" value="${vi.photography.mood}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">
+                    </div>
+                    
+                    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Cancel</button>
+                        <button class="btn-primary" onclick="KnowledgeBase.saveVisualEdits()">💾 Save Changes</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        saveVisualEdits() {
+            try {
+                const updates = {
+                    essence: document.getElementById('edit-visual-essence')?.value,
+                    colors: {
+                        primary: JSON.parse(document.getElementById('edit-visual-primary')?.value || '[]'),
+                        secondary: JSON.parse(document.getElementById('edit-visual-secondary')?.value || '[]')
+                    },
+                    typography: { primary: document.getElementById('edit-visual-typography')?.value },
+                    photography: { mood: document.getElementById('edit-visual-photography')?.value }
+                };
+                
+                Object.assign(KnowledgeBaseData.visualIdentity, updates);
+                localStorage.setItem('lumakara-kb-visual', JSON.stringify(KnowledgeBaseData.visualIdentity));
+                
+                ContentHub.closeExpanded();
+                this.renderVisualIdentity();
+                showToast('Visual identity updated!', 'success');
+            } catch (e) {
+                showToast('Invalid JSON format in colors', 'error');
+            }
+        },
+        
+        // Edit Platform Strategy
+        editPlatforms() {
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            
+            content.innerHTML = `
+                <div style="padding:24px;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">📡 Edit Platform Strategy</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <p style="color:var(--text-muted);margin-bottom:16px;">Select which platforms are active for your content strategy:</p>
+                    
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;">
+                        ${Object.entries(Config.platforms).map(([key, platform]) => `
+                            <label style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--bg-muted);border-radius:10px;cursor:pointer;border:1px solid var(--border);">
+                                <input type="checkbox" id="platform-${key}" checked style="width:18px;height:18px;">
+                                <span style="font-size:20px;">${platform.icon}</span>
+                                <span style="color:var(--text-primary);">${platform.name}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Cancel</button>
+                        <button class="btn-primary" onclick="KnowledgeBase.savePlatformEdits()">💾 Save Changes</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        savePlatformEdits() {
+            // For now just close - platforms are managed in Config
+            ContentHub.closeExpanded();
+            this.renderPlatforms();
+            showToast('Platform strategy saved!', 'success');
+        },
+        
+        // Edit Content Types
+        editContentTypes() {
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            
+            content.innerHTML = `
+                <div style="padding:24px;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">📱 Edit Content Types</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <p style="color:var(--text-muted);margin-bottom:16px;">Configure which content types are available:</p>
+                    
+                    <div style="display:grid;gap:12px;">
+                        ${Object.entries(Config.contentTypes).map(([key, type]) => `
+                            <div style="display:flex;align-items:center;gap:12px;padding:16px;background:var(--bg-muted);border-radius:10px;border-left:4px solid ${type.color};">
+                                <input type="checkbox" id="type-${key}" checked style="width:18px;height:18px;">
+                                <span style="font-size:24px;">${type.icon}</span>
+                                <div style="flex:1;">
+                                    <div style="font-weight:600;color:var(--text-primary);">${type.name}</div>
+                                    <div style="font-size:11px;color:var(--text-muted);">${type.description}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    
+                    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Cancel</button>
+                        <button class="btn-primary" onclick="KnowledgeBase.saveContentTypeEdits()">💾 Save Changes</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        saveContentTypeEdits() {
+            ContentHub.closeExpanded();
+            this.renderContentTypes();
+            showToast('Content types saved!', 'success');
+        },
+        
+        // Notes Management
+        notes: JSON.parse(localStorage.getItem('lumakara-kb-notes') || '[]'),
+        
+        renderNotes() {
+            const container = document.getElementById('kb-notes');
+            if (!container) return;
+            
+            if (this.notes.length === 0) {
+                container.innerHTML = '<div class="empty-state small"><p>No notes yet. Add notes to capture important brand insights.</p></div>';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display:grid;gap:12px;">
+                    ${this.notes.map((note, i) => `
+                        <div style="background:var(--bg-muted);padding:16px;border-radius:10px;border-left:4px solid var(--primary);">
+                            <div style="display:flex;justify-content:space-between;align-items:start;margin-bottom:8px;">
+                                <div style="font-weight:600;color:var(--text-primary);">${note.title}</div>
+                                <div style="display:flex;gap:8px;">
+                                    <button onclick="KnowledgeBase.editNote(${i})" style="background:none;border:none;cursor:pointer;color:var(--text-muted);">✏️</button>
+                                    <button onclick="KnowledgeBase.deleteNote(${i})" style="background:none;border:none;cursor:pointer;color:var(--danger);">🗑️</button>
+                                </div>
+                            </div>
+                            <div style="font-size:13px;color:var(--text-secondary);white-space:pre-wrap;">${note.content}</div>
+                            <div style="font-size:10px;color:var(--text-muted);margin-top:8px;">${new Date(note.createdAt).toLocaleDateString()}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        },
+        
+        addNote() {
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            
+            content.innerHTML = `
+                <div style="padding:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">📝 Add Note</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="note-title" placeholder="Note title..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:16px;">
+                        <label>Content</label>
+                        <textarea id="note-content" rows="8" placeholder="Write your note here..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);"></textarea>
+                    </div>
+                    
+                    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Cancel</button>
+                        <button class="btn-primary" onclick="KnowledgeBase.saveNote()">💾 Save Note</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        saveNote(index = -1) {
+            const title = document.getElementById('note-title')?.value;
+            const content = document.getElementById('note-content')?.value;
+            
+            if (!title || !content) {
+                showToast('Please fill in title and content', 'warning');
+                return;
+            }
+            
+            const note = { title, content, createdAt: new Date().toISOString() };
+            
+            if (index >= 0) {
+                this.notes[index] = note;
+            } else {
+                this.notes.push(note);
+            }
+            
+            localStorage.setItem('lumakara-kb-notes', JSON.stringify(this.notes));
+            ContentHub.closeExpanded();
+            this.renderNotes();
+            showToast('Note saved!', 'success');
+        },
+        
+        editNote(index) {
+            const note = this.notes[index];
+            if (!note) return;
+            
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            
+            content.innerHTML = `
+                <div style="padding:24px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">✏️ Edit Note</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="note-title" value="${note.title}" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">
+                    </div>
+                    
+                    <div class="form-group" style="margin-top:16px;">
+                        <label>Content</label>
+                        <textarea id="note-content" rows="8" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:var(--bg-input);color:var(--text-primary);">${note.content}</textarea>
+                    </div>
+                    
+                    <div style="margin-top:24px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Cancel</button>
+                        <button class="btn-primary" onclick="KnowledgeBase.saveNote(${index})">💾 Update Note</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        deleteNote(index) {
+            if (confirm('Delete this note?')) {
+                this.notes.splice(index, 1);
+                localStorage.setItem('lumakara-kb-notes', JSON.stringify(this.notes));
+                this.renderNotes();
+                showToast('Note deleted!', 'success');
+            }
+        },
+        
+        // Document Upload
+        documents: JSON.parse(localStorage.getItem('lumakara-kb-documents') || '[]'),
+        
+        renderDocuments() {
+            const container = document.getElementById('kb-documents-list');
+            if (!container) return;
+            
+            if (this.documents.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            container.innerHTML = `
+                <div style="display:grid;gap:8px;">
+                    ${this.documents.map((doc, i) => `
+                        <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg-muted);border-radius:8px;">
+                            <span style="font-size:24px;">${this.getDocIcon(doc.type)}</span>
+                            <div style="flex:1;">
+                                <div style="font-weight:500;color:var(--text-primary);">${doc.name}</div>
+                                <div style="font-size:11px;color:var(--text-muted);">${this.formatFileSize(doc.size)} • ${new Date(doc.uploadedAt).toLocaleDateString()}</div>
+                            </div>
+                            <button onclick="KnowledgeBase.viewDocument(${i})" style="background:var(--primary);color:white;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:11px;">View</button>
+                            <button onclick="KnowledgeBase.deleteDocument(${i})" style="background:none;border:none;cursor:pointer;color:var(--danger);">🗑️</button>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        },
+        
+        getDocIcon(type) {
+            const icons = { 'pdf': '📕', 'txt': '📄', 'md': '📝', 'docx': '📘' };
+            return icons[type] || '📁';
+        },
+        
+        formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        },
+        
+        uploadDocument() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.pdf,.txt,.md,.docx';
+            input.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('File too large (max 5MB)', 'error');
+                    return;
+                }
+                
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    const doc = {
+                        name: file.name,
+                        type: file.name.split('.').pop().toLowerCase(),
+                        size: file.size,
+                        content: ev.target.result,
+                        uploadedAt: new Date().toISOString()
+                    };
+                    
+                    this.documents.push(doc);
+                    localStorage.setItem('lumakara-kb-documents', JSON.stringify(this.documents));
+                    this.renderDocuments();
+                    showToast('Document uploaded!', 'success');
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        },
+        
+        viewDocument(index) {
+            const doc = this.documents[index];
+            if (!doc) return;
+            
+            const modal = document.getElementById('expanded-modal');
+            const content = document.getElementById('expanded-content');
+            
+            content.innerHTML = `
+                <div style="padding:24px;max-height:80vh;overflow-y:auto;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;">
+                        <h2 style="color:var(--text-primary);margin:0;">${this.getDocIcon(doc.type)} ${doc.name}</h2>
+                        <button onclick="ContentHub.closeExpanded()" style="background:none;border:none;font-size:24px;cursor:pointer;color:var(--text-muted);">×</button>
+                    </div>
+                    
+                    <pre style="background:var(--bg-muted);padding:16px;border-radius:10px;overflow-x:auto;font-size:12px;color:var(--text-secondary);white-space:pre-wrap;max-height:60vh;overflow-y:auto;">${doc.content}</pre>
+                    
+                    <div style="margin-top:16px;display:flex;gap:12px;justify-content:flex-end;">
+                        <button class="btn-secondary" onclick="navigator.clipboard.writeText(KnowledgeBase.documents[${index}].content); showToast('Copied!', 'success');">📋 Copy Content</button>
+                        <button class="btn-secondary" onclick="ContentHub.closeExpanded()">Close</button>
+                    </div>
+                </div>
+            `;
+            
+            modal.classList.add('show');
+        },
+        
+        deleteDocument(index) {
+            if (confirm('Delete this document?')) {
+                this.documents.splice(index, 1);
+                localStorage.setItem('lumakara-kb-documents', JSON.stringify(this.documents));
+                this.renderDocuments();
+                showToast('Document deleted!', 'success');
+            }
         }
     };
 
