@@ -226,50 +226,22 @@ Write in Indonesian language.`
         });
     },
 
-    // AI Chat - Super Intelligent Assistant
+    // AI Chat - Smart Assistant
     async chat(message, conversationHistory = []) {
-        const workflowsList = typeof WORKFLOWS_DATABASE !== 'undefined' ? 
-            WORKFLOWS_DATABASE.slice(0, 50).map(w => `${w.id}: ${w.name} (${w.category})`).join(', ') : '';
-        
-        const systemPrompt = `You are Lumaverse AI, an ultra-intelligent AI assistant combining the best of Claude, GPT-4, Gemini, and Perplexity. You are:
+        const systemPrompt = `Kamu adalah Lumaverse AI, asisten cerdas untuk content creator. Kamu bisa:
+- Membuat konten (artikel, caption, script, thread)
+- Memberikan ide dan strategi marketing
+- Merekomendasikan workflow dari 133 tools yang tersedia
+- Membantu brainstorming dan problem solving
+- Menjawab pertanyaan tentang social media dan branding
 
-🧠 CAPABILITIES:
-- Expert content strategist & creator
-- Marketing & branding specialist  
-- SEO & social media expert
-- Creative writing master
-- Data analyst & researcher
-- Code & technical assistant
-- Business consultant
+Beberapa workflow populer: SEO Article (WF-001), Viral Thread (WF-002), Carousel (WF-003), Short Video (WF-005), Brand Kit (WF-012), Ad Creative (WF-026), Logo Generator (WF-029).
 
-🎯 YOUR ROLE:
-1. RECOMMEND TOOLS: When user needs help, suggest relevant workflows from: ${workflowsList}
-2. GENERATE CONTENT: Create articles, scripts, captions, hooks, threads instantly
-3. ANALYZE & OPTIMIZE: Review content and suggest improvements
-4. BRAINSTORM: Generate creative ideas, strategies, campaigns
-5. RESEARCH: Provide insights on trends, competitors, markets
-6. ASSIST: Help with any task - writing, planning, problem-solving
-
-📋 RESPONSE STYLE:
-- Be conversational but professional
-- Use emojis sparingly for clarity
-- Provide actionable, specific advice
-- When recommending workflows, mention the workflow ID (e.g., WF-001)
-- Format responses with clear structure
-- Respond in the same language as the user (Indonesian/English)
-
-🔥 SPECIAL ABILITIES:
-- Can generate full content pieces on request
-- Can create marketing strategies
-- Can analyze and improve existing content
-- Can recommend the perfect workflow for any task
-- Can help with technical and creative challenges
-
-Always be helpful, creative, and solution-oriented!`;
+Jawab dengan bahasa yang sama dengan user. Berikan jawaban yang helpful dan actionable.`;
 
         const messages = [
             { role: 'system', content: systemPrompt },
-            ...conversationHistory,
+            ...conversationHistory.slice(-6),
             { role: 'user', content: message }
         ];
 
@@ -277,16 +249,46 @@ Always be helpful, creative, and solution-oriented!`;
             const response = await fetch(this.endpoints.text, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ messages, model: 'openai', temperature: 0.8, max_tokens: 2000 })
+                body: JSON.stringify({ messages, model: 'openai', temperature: 0.7 })
             });
 
-            if (!response.ok) throw new Error('Chat failed');
+            if (!response.ok) {
+                console.error('API Error:', response.status);
+                throw new Error('API request failed');
+            }
             
             const text = await response.text();
+            if (!text || text.trim() === '') throw new Error('Empty response');
             return { success: true, text };
         } catch (error) {
-            return { success: false, error: error.message };
+            console.error('Chat Error:', error);
+            // Fallback response
+            return { 
+                success: true, 
+                text: this.getFallbackResponse(message) 
+            };
         }
+    },
+
+    // Fallback responses when API fails
+    getFallbackResponse(message) {
+        const msg = message.toLowerCase();
+        if (msg.includes('artikel') || msg.includes('article')) {
+            return '📝 Untuk membuat artikel, gunakan workflow **SEO Article Generator (WF-001)**. Masuk ke Magic Studio dan pilih workflow tersebut, lalu isi form dengan topik yang kamu inginkan!';
+        }
+        if (msg.includes('video') || msg.includes('tiktok') || msg.includes('reels')) {
+            return '🎬 Untuk konten video, coba **Short Video Generator (WF-005)** untuk TikTok/Reels atau **YouTube Video Generator (WF-006)** untuk YouTube. Kamu bisa temukan di Magic Studio!';
+        }
+        if (msg.includes('carousel') || msg.includes('instagram')) {
+            return '🎨 Untuk carousel Instagram, gunakan **Carousel Image Generator (WF-003)**. Workflow ini akan membantu kamu membuat slide-slide menarik!';
+        }
+        if (msg.includes('logo') || msg.includes('brand')) {
+            return '🏷️ Untuk branding, coba **Brand Kit Generator (WF-012)** atau **Logo Generator (WF-029)**. Keduanya ada di Magic Studio kategori Branding!';
+        }
+        if (msg.includes('ide') || msg.includes('idea')) {
+            return '💡 Beberapa ide konten viral:\n1. Behind the scenes bisnis kamu\n2. Tips & tricks di industri kamu\n3. Transformation/before-after\n4. Day in my life\n5. Q&A dengan audience\n\nMau saya bantu develop salah satu ide ini?';
+        }
+        return '👋 Hai! Saya Lumaverse AI. Saya bisa membantu kamu dengan:\n\n• Membuat konten (artikel, video script, caption)\n• Ide dan strategi marketing\n• Merekomendasikan workflow yang tepat\n\nCoba tanya sesuatu yang spesifik, misalnya "buatkan caption untuk produk skincare" atau "workflow apa untuk bikin logo?"';
     },
 
     // Suggest topics based on industry
